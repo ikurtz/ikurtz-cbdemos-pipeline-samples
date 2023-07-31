@@ -1,0 +1,79 @@
+pipeline {
+    agent {
+        // New agent with .NET 4.8
+        label "dotnet-4.8"
+    }
+
+    stages {
+        stage('Build and Local Tests') {
+            when {
+                branch 'ENG-1025_kickass_feature_48'
+            }
+            steps {
+                // Install any additional build tools you need
+                // Build your project here
+                echo 'Building...'
+                // Run local tests here
+                echo 'Running local tests...'
+            }
+        }
+
+        stage('Deploy to DEV') {
+            when {
+                branch 'ENG-1025_kickass_feature_48'
+            }
+            steps {
+                // Deploy your built artifact to DEV server
+                echo 'Deploying to DEV server...'
+            }
+        }
+
+        stage('Functional Tests') {
+            when {
+                branch 'ENG-1025_kickass_feature_48'
+            }
+            steps {
+                // Run functional tests against the DEV server
+                echo 'Running functional tests...'
+                // Assuming you have a script or command to run functional tests
+                // against the DEV server.
+                // You can also use plugins like Selenium or JUnit depending on
+                // your testing requirements.
+            }
+        }
+
+        stage('Merge to Master') {
+            when {
+                branch 'ENG-1025_kickass_feature_48'
+                not {
+                    // Only run this stage if functional tests passed
+                    expression {
+                        return currentBuild.result == 'SUCCESS'
+                    }
+                }
+            }
+            steps {
+                // Merge "ENG-1025_kickass_feature_48" into "master"
+                // Assuming you have the appropriate version control system and
+                // access to perform the merge.
+                echo 'Merging into master...'
+            }
+        }
+
+        stage('Deploy to DEMO') {
+            when {
+                branch 'ENG-1025_kickass_feature_48'
+                not {
+                    // Only run this stage if functional tests passed
+                    expression {
+                        return currentBuild.result == 'SUCCESS'
+                    }
+                }
+            }
+            steps {
+                // Deploy your built artifact to DEMO server
+                echo 'Deploying to DEMO server...'
+            }
+        }
+    }
+}
