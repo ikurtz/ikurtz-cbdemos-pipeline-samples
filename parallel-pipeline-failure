@@ -1,0 +1,76 @@
+pipeline {
+    agent none
+    stages {
+        stage('compile') {
+            parallel {
+                stage('ubuntu') {
+                    agent {
+                        kubernetes {
+                            yaml '''
+                            apiVersion: v1
+                            kind: Pod
+                            spec:
+                              containers:
+                              - name: shell
+                                image: ubuntu:24.04
+                                command:
+                                - sleep
+                                args:
+                                - infinity
+                            '''
+                            defaultContainer 'shell'
+                        }
+                    }
+                    steps {
+                        sh '''#!/usr/bin/bash
+                        for i in {1..100}; do echo "ubuntu compile output ${i}"; sleep 1; done'''
+                    }
+                }
+                stage('rockylinux') {
+                    agent {
+                        kubernetes {
+                            yaml '''
+                            apiVersion: v1
+                            kind: Pod
+                            spec:
+                              containers:
+                              - name: shell
+                                image: rockylinux/rockylinux:9-ubi-micro
+                                command:
+                                - sleep
+                                args:
+                                - infinity
+                            '''
+                            defaultContainer 'shell'
+                        }
+                    }
+                    steps {
+                        sh 'for i in {1..100}; do echo "rockylinux compile output ${i}"; sleep 1; done'
+                    }
+                }
+                stage('amazonlinux') {
+                    agent {
+                        kubernetes {
+                            yaml '''
+                            apiVersion: v1
+                            kind: Pod
+                            spec:
+                              containers:
+                              - name: shell
+                                image: amazonlinux:2023.4.20240416.0
+                                command:
+                                - sleep
+                                args:
+                                - infinity
+                            '''
+                            defaultContainer 'shell'
+                        }
+                    }
+                    steps {
+                        sh 'for i in {1..100}; do echo "amazonlinux compile output ${i}"; if [ "$i" -eq 40 ]; then echo "compilation failed with error code 30" >&2; false; fi; sleep 1; done'
+                    }
+                }
+            }
+        }
+    }
+}
